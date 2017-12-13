@@ -13,24 +13,36 @@ r = requests.get(url="http://www.iciba.com/index.php", params=reload)
 s1 = r.text.split("(", 1)
 s2 = s1[1].rsplit(")", 1)
 inp_dict = json.loads(s2[0])
-symbols = inp_dict["baesInfo"]["symbols"]
+try:
+    symbols = inp_dict["baesInfo"]["symbols"]
+    ph_en = symbols[0]["ph_en"] #获取英国音标
+    ph_am = symbols[0]["ph_am"]#获取美国音标
+    parts = symbols[0]["parts"] #获取释义
+    sentence = inp_dict["sentence"] #获取例句
+    ph_en_mp3 = symbols[0]["ph_en_mp3"]#获取英式发音
+    ph_am_mp3 = symbols[0]["ph_am_mp3"]#获取美式发音
+    # print(symbols)
+    print(ph_en)
+    print(ph_am)
+    print(type(parts))
+    print(ph_en_mp3)
+    print(ph_am_mp3)
+    print(sentence)
+except KeyError as e:
+    symbols = inp_dict["baesInfo"]
+    # ph_en = symbols[0]["ph_en"]  # 获取英国音标
+    # ph_am = symbols[0]["ph_am"]  # 获取美国音标
+    # parts = symbols[0]["parts"]  # 获取释义
+    sentence = inp_dict["sentence"]  # 获取例句
+    # ph_en_mp3 = symbols[0]["ph_en_mp3"]  # 获取英式发音
+    # ph_am_mp3 = symbols[0]["ph_am_mp3"]  # 获取美式发音
+    # print(symbols)
+    # print(ph_en)
+    # print(ph_am)
+    # print(type(parts))
+    # print(ph_en_mp3)
+    # print(ph_am_mp3)
+    print(sentence)
 
-ph_en = symbols[0]["ph_en"] #获取英国音标
-ph_am = symbols[0]["ph_am"]#获取美国音标
-parts = symbols[0]["parts"] #获取释义
-sentence = inp_dict["sentence"] #获取例句
-ph_en_mp3 = symbols[0]["ph_en_mp3"]#获取英式发音
-ph_am_mp3 = symbols[0]["ph_am_mp3"]#获取美式发音
-# print(symbols)
-print(ph_en)
-print(ph_am)
-print(type(parts))
-print(ph_en_mp3)
-print(ph_am_mp3)
-print(sentence)
-# yingr = requests.get(ph_en_mp3, stream=True)
-# # data = yingr.raw.read()
-# with open("voice\\"+"fuck.mp3", "wb") as f:
-#     for chunk in yingr.iter_content(chunk_size=100):
-#         f.write(chunk)
+
 

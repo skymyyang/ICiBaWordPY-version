@@ -30,45 +30,63 @@ class WordSpider():
             s1 = r.text.split("(", 1)
             s2 = s1[1].rsplit(")", 1)
             inp_dict = json.loads(s2[0])
-            symbols = inp_dict["baesInfo"]["symbols"]
-            # 获取英国音标
-            self.ph_en = symbols[0]["ph_en"]
-            print(self.ph_en)
-            # 获取美国音标
-            self.ph_an = symbols[0]["ph_am"]
-            # 获取释义
-            self.parts = symbols[0]["parts"]
-
-            # 获取例句
-            sentence_dict = {}
             try:
-                for sen1 in inp_dict["sentence"]:
-                    sentence_dict[sen1["Network_en"]] = sen1["Network_cn"]
-                self.sentence.append(sentence_dict)
+                symbols = inp_dict["baesInfo"]["symbols"]
+                # 获取英国音标
+                self.ph_en = symbols[0]["ph_en"]
+                # print(self.ph_en)
+                # 获取美国音标
+                self.ph_an = symbols[0]["ph_am"]
+                # 获取释义
+                self.parts = symbols[0]["parts"]
+                # 获取例句
+                sentence_dict = {}
+                try:
+                    for sen1 in inp_dict["sentence"]:
+                        sentence_dict[sen1["Network_en"]] = sen1["Network_cn"]
+                    self.sentence.append(sentence_dict)
+                except KeyError as e:
+                    print("There is no have sentence...., the err is %s" % e)
+
+                # 获取英式发音
+                ph_en_mp3 = symbols[0]["ph_en_mp3"]
+                try:
+                    yingres = requests.get(ph_en_mp3, stream=True)
+                    with open("voice\\" + self.word + "ying.mp3", "wb") as f:
+                        for chunk in yingres.iter_content(chunk_size=100):
+                            f.write(chunk)
+                    self.ph_en_mp3 = "/voice/" + self.word + "ying.mp3"
+                except:
+                    print("There is no ph_en_mp3 of ths %s..." % self.word)
+
+                # 获取美式发音
+                ph_am_mp3 = symbols[0]["ph_am_mp3"]
+                try:
+                    meires = requests.get(ph_am_mp3, stream=True)
+                    with open("voice\\" + self.word + "mei.mp3", "wb") as f:
+                        for chunk in meires.iter_content(chunk_size=100):
+                            f.write(chunk)
+                    self.ph_an_mp3 = "/voice/" + self.word + "mei.mp3"
+                except:
+                    print("There is no ph_am_mp3 of ths %s..." % self.word)
             except KeyError as e:
-                print("There is no have sentence...., the err is %s"  %e)
+                try:
+                    symbols = inp_dict["baesInfo"]#此时只能获取例句了
+                    sentence_dict = {}
+                    try:
+                        for sen1 in symbols["sentence"]:
+                            sentence_dict[sen1["Network_en"]] = sen1["Network_cn"]
+                        self.sentence.append(sentence_dict)
+                    except KeyError as e:
+                        print("There is no have sentence...., the err is %s" % e)
+                except:
+                    print("do not have this word %s" %self.word)
 
-            # 获取英式发音
-            ph_en_mp3 = symbols[0]["ph_en_mp3"]
-            try:
-                yingres = requests.get(ph_en_mp3, stream=True)
-                with open("voice\\"+self.word+"ying.mp3", "wb") as f:
-                    for chunk in yingres.iter_content(chunk_size=100):
-                        f.write(chunk)
-                self.ph_en_mp3 = "/voice/"+self.word+"ying.mp3"
-            except:
-                print("There is no ph_en_mp3 of ths %s..." %self.word)
 
-            # 获取美式发音
-            ph_am_mp3 = symbols[0]["ph_am_mp3"]
-            try:
-                meires = requests.get(ph_am_mp3, stream=True)
-                with open("voice\\"+self.word+"mei.mp3", "wb") as f:
-                    for chunk in meires.iter_content(chunk_size=100):
-                        f.write(chunk)
-                self.ph_an_mp3 = "/voice/"+self.word+"mei.mp3"
-            except:
-                print("There is no ph_am_mp3 of ths %s..." %self.word)
+
+
+
+
 
         else:
             print("requeest is fail......")
