@@ -1,6 +1,7 @@
 import requests
 import json
-
+import re
+from bs4 import BeautifulSoup
 
 class WordSpider():
     def __init__(self, word):
@@ -25,6 +26,7 @@ class WordSpider():
             'User-Agent': r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36',
         }
         get_url = "http://www.iciba.com/index.php"
+        gethtmlurl = "http://www.iciba.com/"
         r = requests.get(url=get_url, headers=header, params=parameter)
         if r.status_code == requests.codes.ok:
             s1 = r.text.split("(", 1)
@@ -57,7 +59,28 @@ class WordSpider():
                             f.write(chunk)
                     self.ph_en_mp3 = "/voice/" + self.word + "ying.mp3"
                 except:
-                    print("There is no ph_en_mp3 of ths %s..." % self.word)
+                    #如果用api返回的response无法获取到英式发音，就直接请求web界面，然后解析html获取
+                    print("The Response is no ph_en_mp3 of ths %s..." % self.word,"try with http://www.iciba.com/"+self.word)
+                    r = requests.get(url=gethtmlurl+self.word,headers=header)
+                    bs = BeautifulSoup(r.text, "html.parser")
+                    mp = bs.findAll("i", {"class": "new-speak-step"})
+                    bbb = "(http://.*.mp3)"
+                    mp3urllist = []
+                    for i in mp:
+                        mp3url = i.get("ms-on-mouseover")
+                        mp3url2 = re.findall(bbb, mp3url)[0]
+                        mp3urllist.append(mp3url2)
+                    #print(mp3urllist)
+                    yingres = requests.get(mp3urllist[0], stream=True)
+                    with open("voice\\" + self.word + "ying.mp3", "wb") as f:
+                        for chunk in yingres.iter_content(chunk_size=100):
+                            f.write(chunk)
+                    self.ph_en_mp3 = "/voice/" + self.word + "ying.mp3"
+
+
+
+
+
 
                 # 获取美式发音
                 ph_am_mp3 = symbols[0]["ph_am_mp3"]
@@ -69,6 +92,21 @@ class WordSpider():
                     self.ph_an_mp3 = "/voice/" + self.word + "mei.mp3"
                 except:
                     print("There is no ph_am_mp3 of ths %s..." % self.word)
+                    r = requests.get(url=gethtmlurl + self.word, headers=header)
+                    bs = BeautifulSoup(r.text, "html.parser")
+                    mp = bs.findAll("i", {"class": "new-speak-step"})
+                    bbb = "(http://.*.mp3)"
+                    mp3urllist = []
+                    for i in mp:
+                        mp3url = i.get("ms-on-mouseover")
+                        mp3url2 = re.findall(bbb, mp3url)[0]
+                        mp3urllist.append(mp3url2)
+                    #print(mp3urllist)
+                    meires = requests.get(mp3urllist[1], stream=True)
+                    with open("voice\\" + self.word + "mei.mp3", "wb") as f:
+                        for chunk in meires.iter_content(chunk_size=100):
+                            f.write(chunk)
+                    self.ph_an_mp3 = "/voice/" + self.word + "mei.mp3"
             except KeyError as e:
                 try:
                     symbols = inp_dict["baesInfo"]#此时只能获取例句了
