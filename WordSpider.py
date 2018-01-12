@@ -61,7 +61,7 @@ class WordSpider():
                 except:
                     #如果用api返回的response无法获取到英式发音，就直接请求web界面，然后解析html获取
                     print("The Response is no ph_en_mp3 of ths %s..." % self.word,"try with http://www.iciba.com/"+self.word)
-                    r = requests.get(url=gethtmlurl+self.word,headers=header)
+                    r = requests.get(url=gethtmlurl+self.word.replace(' ','%20'),headers=header)
                     bs = BeautifulSoup(r.text, "html.parser")
                     mp = bs.findAll("i", {"class": "new-speak-step"})
                     bbb = "(http://.*.mp3)"
@@ -92,7 +92,7 @@ class WordSpider():
                     self.ph_an_mp3 = "/voice/" + self.word + "mei.mp3"
                 except:
                     print("There is no ph_am_mp3 of ths %s..." % self.word)
-                    r = requests.get(url=gethtmlurl + self.word, headers=header)
+                    r = requests.get(url=gethtmlurl + self.word.replace(' ','%20'), headers=header)
                     bs = BeautifulSoup(r.text, "html.parser")
                     mp = bs.findAll("i", {"class": "new-speak-step"})
                     bbb = "(http://.*.mp3)"
@@ -102,11 +102,14 @@ class WordSpider():
                         mp3url2 = re.findall(bbb, mp3url)[0]
                         mp3urllist.append(mp3url2)
                     #print(mp3urllist)
-                    meires = requests.get(mp3urllist[1], stream=True)
-                    with open("voice\\" + self.word + "mei.mp3", "wb") as f:
-                        for chunk in meires.iter_content(chunk_size=100):
-                            f.write(chunk)
-                    self.ph_an_mp3 = "/voice/" + self.word + "mei.mp3"
+                    try:
+                        meires = requests.get(mp3urllist[1], stream=True)
+                        with open("voice\\" + self.word + "mei.mp3", "wb") as f:
+                            for chunk in meires.iter_content(chunk_size=100):
+                                f.write(chunk)
+                        self.ph_an_mp3 = "/voice/" + self.word + "mei.mp3"
+                    except:
+                        print("彻底没有美式发音了")
             except KeyError as e:
                 try:
                     symbols = inp_dict["baesInfo"]#此时只能获取例句了
